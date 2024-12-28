@@ -1,8 +1,7 @@
 import os
 import requests
-import tkinter as tk
-from tkinter import messagebox
-from PIL import Image, ImageDraw, ImageFont, ImageTk
+import streamlit as st
+from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 
 # Function to get a fortune from the API
@@ -84,46 +83,17 @@ def fetch_image_with_text():
 
             return img
         else:
-            messagebox.showerror("Error", "Failed to fetch image.")
+            st.error("Failed to fetch image.")
     except requests.exceptions.RequestException as e:
-        messagebox.showerror("Error", f"An error occurred: {e}")
+        st.error(f"An error occurred: {e}")
 
-# Function to display the image with text overlay
-def display_image():
+# Streamlit App UI
+st.title("Fortune Fetcher")
+st.subheader("Click below to fetch a fortune and display it on a beautiful image")
+
+# Button to fetch the image with fortune
+if st.button("Fetch Fortune"):
     img = fetch_image_with_text()
     if img:
-        tk_img = ImageTk.PhotoImage(img)
-        image_label.config(image=tk_img)
-        image_label.image = tk_img
-
-# Create the main application window
-app = tk.Tk()
-app.title("Fortune Fetcher")
-app.geometry("600x500")
-app.configure(bg="#2e2e2e")  # Dark background for a modern look
-
-# Create a label for instructions
-instruction_label = tk.Label(
-    app, text="Click the button to fetch a fortune:", font=("Arial", 14), bg="#2e2e2e", fg="white"
-)
-instruction_label.pack(pady=20)
-
-# Create a button to fetch the image with the fortune
-fetch_button = tk.Button(
-    app,
-    text="Fetch Fortune",
-    command=display_image,
-    font=("Arial", 12),
-    bg="#4caf50",
-    fg="white",
-    activebackground="#45a049",
-    activeforeground="white",
-)
-fetch_button.pack(pady=10)
-
-# Create a label to display the image
-image_label = tk.Label(app, bg="#2e2e2e")
-image_label.pack(pady=20)
-
-# Start the GUI event loop
-app.mainloop()
+        # Display the image with text overlay
+        st.image(img, caption="Fortune Image", use_column_width=True)
