@@ -1,10 +1,9 @@
+import os
 import requests
 import tkinter as tk
 from tkinter import messagebox
 from PIL import Image, ImageDraw, ImageFont, ImageTk
 from io import BytesIO
-import numpy as np
-
 
 # Function to get a fortune from the API
 def get_fortune():
@@ -18,7 +17,6 @@ def get_fortune():
             return "Sorry, I couldn't get a fortune at the moment."
     except requests.exceptions.RequestException as e:
         return f"An error occurred: {e}"
-
 
 # Function to split text into paginated chunks
 def paginate_text(text, max_length=100):
@@ -35,28 +33,31 @@ def paginate_text(text, max_length=100):
         lines.append(line.strip())
     return lines
 
-
 # Function to calculate contrasting font color
 def get_contrasting_color(rgb):
     r, g, b = rgb
     brightness = (r * 299 + g * 587 + b * 114) / 1000  # Luminosity formula
     return "white" if brightness < 128 else "black"
 
-
 # Function to add paginated, styled text to the image
 def add_text_to_image(img, text):
     draw = ImageDraw.Draw(img)
-    font = ImageFont.truetype("arial.ttf", size=24)  # Adjust font size
+
+    # Attempt to load Times New Roman or fallback to Liberation Serif
+    font_path = "/usr/share/fonts/truetype/msttcorefonts/times.ttf"  # Default Times New Roman path
+    if not os.path.exists(font_path):
+        font_path = "/usr/share/fonts/truetype/liberation/LiberationSerif-Regular.ttf"  # Fallback font
+    font = ImageFont.truetype(font_path, size=24)  # Adjust font size
 
     # Split text into paginated chunks
     lines = paginate_text(text, max_length=40)
 
-    # Get background color from the top-left pixel
-    bg_color = img.getpixel((0, 0))
-    font_color = get_contrasting_color(bg_color)
+    # Get background color from the center of the image
+    img_width, img_height = img.size
+    center_pixel = img.getpixel((img_width // 2, img_height // 2))  # Sample center pixel
+    font_color = get_contrasting_color(center_pixel)
 
     # Calculate vertical alignment
-    img_width, img_height = img.size
     line_height = 30  # Approximate height of each text line
     y_start = (img_height - (len(lines) * line_height)) // 2
 
@@ -67,7 +68,6 @@ def add_text_to_image(img, text):
         draw.text((x, y), line, font=font, fill=font_color)
 
     return img
-
 
 # Function to fetch an image and overlay text
 def fetch_image_with_text():
@@ -88,7 +88,6 @@ def fetch_image_with_text():
     except requests.exceptions.RequestException as e:
         messagebox.showerror("Error", f"An error occurred: {e}")
 
-
 # Function to display the image with text overlay
 def display_image():
     img = fetch_image_with_text()
@@ -96,7 +95,6 @@ def display_image():
         tk_img = ImageTk.PhotoImage(img)
         image_label.config(image=tk_img)
         image_label.image = tk_img
-
 
 # Create the main application window
 app = tk.Tk()
